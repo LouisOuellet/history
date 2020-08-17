@@ -3,13 +3,15 @@
 The History class is an extension to the Database class. Little heads up though. This class will increase the amount of queries to your MySQL database. In exchange, you will have a complete log of all the transactions done into your database.
 
 ## Change Log
+ * [2020-08-17] - Remodeled the CRUD Methods
  * [2020-08-16] - Uploaded to GitHub
 
 ## Requirements for the Database Class
  * PHP
  * MySQL
+ * Database Class
 
-### SQL Table
+### SQL history Table
  * id int(11) AUTO_INCREMENT PRIMARY
  * created datetime
  * modified datetime
@@ -34,12 +36,14 @@ The History class is an extension to the Database class. Little heads up though.
 ## Usage
 ### Basics
 ```php
+require_once('database.php');
 require_once('history.php');
 $db = new History('host','username','password','database');
 ```
 
 ### Example
 ```php
+require_once('database.php');
 require_once('history.php');
 $db = new History('host','username','password','database');
 

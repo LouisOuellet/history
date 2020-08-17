@@ -1,4 +1,5 @@
 <?php
+
 class History extends Database{
 
   public function __construct($host,$username,$password,$database){
