@@ -39,16 +39,6 @@ The History class is an extension to the Database class. Little heads up though.
 require_once('database.php');
 require_once('history.php');
 $db = new History('host','username','password','database');
-
-// Disable History
-// This does not deactivate the CRUD functions, just disable the history.
-// Default is enabled
-$db->disable(FALSE);
-
-// Change History Level
-// This controls which queries to record. (1=Delete,2=Update,3=Create,4=Read)
-// Default is 4
-$db->level(2);
 ```
 
 ### Example
@@ -56,6 +46,16 @@ $db->level(2);
 require_once('database.php');
 require_once('history.php');
 $db = new History('host','username','password','database');
+
+// History is Enabled by default
+// The History Level controls which queries to record. (1=Delete,2=Update,3=Create,4=Read)
+// Default is 4
+
+// To Disable History
+$db->disable(FALSE);
+
+// To Change the History Level
+$db->level(2);
 
 // Create record:
 $account = [
