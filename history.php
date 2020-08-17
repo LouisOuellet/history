@@ -3,43 +3,66 @@
 class History extends Database{
 
 	public $Status = TRUE;
+	public $Level = 4;
 
   public function __construct($host,$username,$password,$database){
     parent::__construct($host,$username,$password,$database);
   }
 
-	public function disableHistory($status = FALSE){
+	public function disable($status = TRUE){
 		$this->Status = $status;
+	}
+
+	public function level($level = 4){
+		$this->Level = $level;
 	}
 
 	private function get_client_ip() {
 	  $ipaddress = '';
-	  if (getenv('HTTP_CLIENT_IP'))
+	  if(getenv('HTTP_CLIENT_IP')){
 	    $ipaddress = getenv('HTTP_CLIENT_IP');
-	  else if(getenv('HTTP_X_FORWARDED_FOR'))
+	  } elseif(getenv('HTTP_X_FORWARDED_FOR')){
 	    $ipaddress = getenv('HTTP_X_FORWARDED_FOR');
-	  else if(getenv('HTTP_X_FORWARDED'))
+	  } elseif(getenv('HTTP_X_FORWARDED')){
 	    $ipaddress = getenv('HTTP_X_FORWARDED');
-	  else if(getenv('HTTP_FORWARDED_FOR'))
+	  } elseif(getenv('HTTP_FORWARDED_FOR')){
 	    $ipaddress = getenv('HTTP_FORWARDED_FOR');
-	  else if(getenv('HTTP_FORWARDED'))
+	  } elseif(getenv('HTTP_FORWARDED')){
 	    $ipaddress = getenv('HTTP_FORWARDED');
-	  else if(getenv('REMOTE_ADDR'))
+	  } elseif(getenv('REMOTE_ADDR')){
 	    $ipaddress = getenv('REMOTE_ADDR');
-	  else
+	  } else {
 	    $ipaddress = 'UNKNOWN';
+		}
 	  return $ipaddress;
 	}
 
 	private function saveTransaction($table, $action, $before, $after){
-		$query = [
-			'before' => json_encode($before),
-			'after' => json_encode($after),
-			'action' => $action,
-			'table' => $table,
-			'ip' => $this->get_client_ip(),
-		];
-		parent::create('history',$query);
+		$run = FALSE;
+		switch($action){
+			case"read":
+				if($this->Level >= 1){ $run = TRUE; }
+				break;
+			case"create":
+				if($this->Level >= 2){ $run = TRUE; }
+				break;
+			case"update":
+				if($this->Level >= 3){ $run = TRUE; }
+				break;
+			case"delete":
+				if($this->Level >= 4){ $run = TRUE; }
+				break;
+		}
+		if($run){
+			$query = [
+				'before' => json_encode($before),
+				'after' => json_encode($after),
+				'action' => $action,
+				'table' => $table,
+				'ip' => $this->get_client_ip(),
+			];
+			parent::create('history',$query);
+		}
 	}
 
 	public create($table,$fields){

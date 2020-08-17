@@ -1,6 +1,6 @@
 # PHP MySQL History class
 
-The History class is an extension to the Database class. Little heads up though. This class will increase the amount of queries to your MySQL database. In exchange, you will have a complete log of all the transactions done into your database.
+The History class is an extension to the Database class. Little heads up though. This class will increase the amount of queries to your MySQL database. In exchange, you will have a complete log of all the CRUD transactions done into your database.
 
 ## Change Log
  * [2020-08-17] - Remodeled the CRUD Methods
@@ -42,7 +42,11 @@ $db = new History('host','username','password','database');
 
 // Disable History
 // This does not deactivate the CRUD functions, just disable the history.
-$db->disableHistory(FALSE);
+$db->disable(FALSE);
+
+// Change History Level
+// This controls which queries to record. (1=Read,2=Create,3=Update,4=Delete)
+$db->level(4);
 ```
 
 ### Example
