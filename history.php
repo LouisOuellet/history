@@ -41,16 +41,16 @@ class History extends Database{
 		$run = FALSE;
 		switch($action){
 			case"read":
-				if($this->Level >= 1){ $run = TRUE; }
+				if($this->Level >= 4){ $run = TRUE; }
 				break;
 			case"create":
-				if($this->Level >= 2){ $run = TRUE; }
-				break;
-			case"update":
 				if($this->Level >= 3){ $run = TRUE; }
 				break;
+			case"update":
+				if($this->Level >= 2){ $run = TRUE; }
+				break;
 			case"delete":
-				if($this->Level >= 4){ $run = TRUE; }
+				if($this->Level >= 1){ $run = TRUE; }
 				break;
 		}
 		if($run){

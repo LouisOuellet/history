@@ -42,11 +42,13 @@ $db = new History('host','username','password','database');
 
 // Disable History
 // This does not deactivate the CRUD functions, just disable the history.
+// Default is enabled
 $db->disable(FALSE);
 
 // Change History Level
-// This controls which queries to record. (1=Read,2=Create,3=Update,4=Delete)
-$db->level(4);
+// This controls which queries to record. (1=Delete,2=Update,3=Create,4=Read)
+// Default is 4
+$db->level(2);
 ```
 
 ### Example
