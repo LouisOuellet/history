@@ -39,6 +39,10 @@ The History class is an extension to the Database class. Little heads up though.
 require_once('database.php');
 require_once('history.php');
 $db = new History('host','username','password','database');
+
+// Disable History
+// This does not deactivate the CRUD functions, just disable the history.
+$db->disableHistory(FALSE);
 ```
 
 ### Example
@@ -47,5 +51,25 @@ require_once('database.php');
 require_once('history.php');
 $db = new History('host','username','password','database');
 
+// Create record:
+$account = [
+	'username' => 'test',
+	'password' => 'test',
+	'name' => 'test',
+];
+$db->create('accounts', $account);
 
+// Read record:
+$db->read('accounts', 'test', 'username');
+
+// Update record for row 1 but you can also specify the search parameter by setting a 4th parameter as the column:
+$account = [
+	'username' => 'test',
+	'password' => 'test',
+	'name' => 'test',
+];
+$db->update('accounts', $account, 1);
+
+// Delete record for row 1 but you can also specify the search parameter by setting a 3th parameter as the column:
+$db->save('accounts', 1);
 ```

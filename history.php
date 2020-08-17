@@ -2,9 +2,15 @@
 
 class History extends Database{
 
+	public $Status = TRUE;
+
   public function __construct($host,$username,$password,$database){
     parent::__construct($host,$username,$password,$database);
   }
+
+	public function disableHistory($status = FALSE){
+		$this->Status = $status;
+	}
 
 	private function get_client_ip() {
 	  $ipaddress = '';
@@ -38,28 +44,34 @@ class History extends Database{
 
 	public create($table,$fields){
 		$results = parent::create($table,$field);
-		$this->saveTransaction($table, 'create', [], $fields);
+		if($this->Status){ $this->saveTransaction($table, 'create', [], $fields); }
 		return $results;
 	}
 
 	public read($table, $id = null, $field = 'id'){
 		$results = parent::read($table,$id,$field);
-		if($results->numRows() == 1){ $before = $results->fetchArray(); } else { $before = $results->fetchAll(); }
-		$this->saveTransaction($table, 'read', $before, []);
+		if($this->Status){
+			if($results->numRows() == 1){ $before = $results->fetchArray(); } else { $before = $results->fetchAll(); }
+			$this->saveTransaction($table, 'read', $before, []);
+		}
 		return $results;
 	}
 
 	public update($table, $fields, $id, $field = 'id'){
-		$before = parent::read($table,$id,$field)->fetchArray();
 		$results = parent::update($table,$field,$id,$field);
-		$this->saveTransaction($table, 'save', $before, $fields);
+		if($this->Status){
+			$before = parent::read($table,$id,$field)->fetchArray();
+			$this->saveTransaction($table, 'save', $before, $fields);
+		}
 		return $results;
 	}
 
 	public delete($table,$id,$field = 'id'){
-		$before = parent::read($table,$id,$field)->fetchArray();
+		if($this->Status){
+			$before = parent::read($table,$id,$field)->fetchArray();
+			$this->saveTransaction($table, 'delete', $before, []);
+		}
 		$results = parent::delete($table,$id,$field);
-		$this->saveTransaction($table, 'delete', $before, []);
 		return $results;
 	}
 }
