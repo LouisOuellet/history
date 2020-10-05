@@ -1,15 +1,14 @@
 <?php
 
+// Import Librairies
+require_once dirname(__FILE__,3) . '/src/lib/database.php';
+
 class History extends Database{
 
-	public $Status = TRUE;
-	public $Level = 4;
+	public $Status = TRUE; // Is history enabled
+	public $Level = 4; // Level of logging. 4=READ,3=CREATE,2=UPDATE,1=DELETE
 
-  public function __construct($host,$username,$password,$database){
-    parent::__construct($host,$username,$password,$database);
-  }
-
-	public function disable($status = TRUE){
+	public function disable($status = FALSE){
 		$this->Status = $status;
 	}
 
@@ -17,7 +16,7 @@ class History extends Database{
 		$this->Level = $level;
 	}
 
-	private function get_client_ip() {
+	public function getClientIP() {
 	  $ipaddress = '';
 	  if(getenv('HTTP_CLIENT_IP')){
 	    $ipaddress = getenv('HTTP_CLIENT_IP');
@@ -37,7 +36,7 @@ class History extends Database{
 	  return $ipaddress;
 	}
 
-	private function saveTransaction($table, $action, $before, $after){
+	protected function saveTransaction($table, $action, $before, $after, $id, $status){
 		$run = FALSE;
 		switch($action){
 			case"read":
@@ -54,45 +53,58 @@ class History extends Database{
 				break;
 		}
 		if($run){
+			if((is_int($status))&&($status > 0)){ $status = 'Success'; } else { $status = 'Error'; }
 			$query = [
-				'before' => json_encode($before),
-				'after' => json_encode($after),
+				'before' => json_encode($before, JSON_PRETTY_PRINT),
+				'after' => json_encode($after, JSON_PRETTY_PRINT),
 				'action' => $action,
 				'table' => $table,
-				'ip' => $this->get_client_ip(),
+				'of' => $id,
+				'status' => $status,
+				'ip' => $this->getClientIP(),
 			];
-			parent::create('history',$query);
+			$results = $this->query('INSERT INTO `history` (created,modified) VALUES (?,?)', date("Y-m-d H:i:s"), date("Y-m-d H:i:s"));
+			$id = $this->lastInsertID();
+			$headers = $this->getHeaders('history');
+	    foreach($query as $key => $val){
+	      if((in_array($key,$headers))&&($key != 'id')){
+	        $this->query('UPDATE `history` SET `'.$key.'` = ? WHERE `id` = ?',$val,$id);
+	      }
+	    }
 		}
 	}
 
-	public create($table,$fields){
-		$results = parent::create($table,$field);
-		if($this->Status){ $this->saveTransaction($table, 'create', [], $fields); }
+	public function create($table,$fields){
+		$history = $this->Status;
+		$this->Status = FALSE;
+		$results = parent::create($table,$fields);
+		$this->Status = $history;
+		if($this->Status){ $this->saveTransaction($table, 'create', [], $fields, $results, $results); }
 		return $results;
 	}
 
-	public read($table, $id = null, $field = 'id'){
+	public function read($table, $id = null, $field = 'id'){
 		$results = parent::read($table,$id,$field);
 		if($this->Status){
 			if($results->numRows() == 1){ $before = $results->fetchArray(); } else { $before = $results->fetchAll(); }
-			$this->saveTransaction($table, 'read', $before, []);
+			$this->saveTransaction($table, 'read', $before, [], $id, $results->numRows());
 		}
 		return $results;
 	}
 
-	public update($table, $fields, $id, $field = 'id'){
-		$results = parent::update($table,$field,$id,$field);
+	public function update($table, $fields, $id, $field = 'id'){
+		$results = parent::update($table,$fields,$id,$field);
 		if($this->Status){
-			$before = parent::read($table,$id,$field)->fetchArray();
-			$this->saveTransaction($table, 'save', $before, $fields);
+			$before = $this->read($table,$id,$field)->fetchArray();
+			$this->saveTransaction($table, 'save', $before, $fields, $id, $results->affectedRows());
 		}
 		return $results;
 	}
 
-	public delete($table,$id,$field = 'id'){
+	public function delete($table,$id,$field = 'id'){
 		if($this->Status){
-			$before = parent::read($table,$id,$field)->fetchArray();
-			$this->saveTransaction($table, 'delete', $before, []);
+			$before = $this->read($table,$id,$field)->fetchArray();
+			$this->saveTransaction($table, 'delete', $before, [], $id, $results->affectedRows());
 		}
 		$results = parent::delete($table,$id,$field);
 		return $results;
