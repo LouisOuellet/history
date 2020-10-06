@@ -3,6 +3,7 @@
 The History class is an extension to the Database class. Little heads up though. This class will increase the amount of queries to your MySQL database. In exchange, you will have a complete log of all the CRUD transactions done into your database.
 
 ## Change Log
+ * [2020-10-05] - Fixed various issues
  * [2020-08-17] - Remodeled the CRUD Methods
  * [2020-08-16] - Uploaded to GitHub
 
@@ -16,7 +17,9 @@ The History class is an extension to the Database class. Little heads up though.
  * created datetime
  * modified datetime
  * action varchar(255)
+ * status varchar(255)
  * table varchar(255)
+ * of varchar(255)
  * before TEXT
  * after TEXT
  * ip varchar(255)
